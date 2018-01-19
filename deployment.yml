@@ -32,4 +32,12 @@ spec:
                   key: fredAddress
           ports:
             - name: http
-              containerPort: 7900
+              containerPort: 80
+          volumeMounts:
+            - name: gabe-tls
+              readOnly: true
+              mountPath: /tls
+      volumes:
+        - name: gabe-tls
+          secret:
+            secretName: gabe-tls

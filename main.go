@@ -16,18 +16,18 @@ import (
 	"google.golang.org/grpc"
 )
 
-const (
-	hostPort = ":3000"
-	fredPort = ":50051"
+var (
+	hostAddress = os.Getenv("HOST_ADDRESS")
+	fredAddress = os.Getenv("FRED_ADDRESS")
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%v %v %v", r.Proto, r.Method, r.URL.EscapedPath())
 	name := "Friend"
 
-	conn, err := grpc.Dial(fredPort, grpc.WithInsecure())
+	conn, err := grpc.Dial(fredAddress, grpc.WithInsecure())
 	if err != nil {
-		log.Printf("Failled to dial Fred: %v", err)
+		log.Printf("Failed to dial Fred: %v", err)
 	}
 	defer conn.Close()
 
@@ -38,8 +38,10 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	res, err := fredClient.GetIndex(context.Background(), req)
 	if err != nil {
 		log.Printf("Fred GetIndex error: %v", err)
+		fmt.Fprintf(w, "Internal Server Error")
+	} else {
+		fmt.Fprintf(w, res.GetMessage())
 	}
-	fmt.Fprintf(w, res.GetMessage())
 }
 
 func main() {
@@ -52,12 +54,12 @@ func main() {
 
 	// Server Startup
 	server := http.Server{
-		Addr:         hostPort,
+		Addr:         hostAddress,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
 	go func() {
-		log.Print("Listening on " + hostPort)
+		log.Print("Listening on " + hostAddress)
 		log.Fatal(server.ListenAndServe())
 	}()
 

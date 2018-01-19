@@ -1,0 +1,35 @@
+# gabe/deployment.yml
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gabe-deployment
+  labels:
+    app: gabe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gabe
+  template:
+    metadata:
+      labels:
+        app: gabe
+    spec:
+      containers:
+        - name: gabe
+          image: gcr.io/noted-amphora-191501/gabe:latest
+          env:
+            - name: HOST_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  name: gabe-config
+                  key: hostAddress
+            - name: FRED_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  name: gabe-config
+                  key: fredAddress
+          ports:
+            - name: http
+              containerPort: 7900
